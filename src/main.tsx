@@ -101,6 +101,7 @@ function App() {
     [showBest, setShowBest] = useState(false),
     [variation, setVariation] = useState<{ fen: string; san: string }>();
   const [selected, setSelected] = useState<Square>();
+  const [draggingPiece, setDraggingPiece] = useState<{ color: "w" | "b"; type: string; x: number; y: number }>();
   const engine = useRef<Engine | null>(null),
     run = useRef(0);
   const fen = variation?.fen || game?.fens[ply] || new Chess().fen();
@@ -346,6 +347,20 @@ function App() {
   const legal = selected
     ? board.moves({ square: selected, verbose: true }).map((m) => m.to)
     : [];
+  useEffect(() => {
+    if (!draggingPiece) return;
+    const movePreview = (event: PointerEvent) =>
+      setDraggingPiece((piece) => piece ? { ...piece, x: event.clientX, y: event.clientY } : undefined);
+    const clearPreview = () => setDraggingPiece(undefined);
+    window.addEventListener("pointermove", movePreview);
+    window.addEventListener("pointerup", clearPreview, { once: true });
+    window.addEventListener("dragend", clearPreview, { once: true });
+    return () => {
+      window.removeEventListener("pointermove", movePreview);
+      window.removeEventListener("pointerup", clearPreview);
+      window.removeEventListener("dragend", clearPreview);
+    };
+  }, [draggingPiece]);
   const player = (name: string, color: string) => (
     <div className="player">
       <div className={`player-piece ${color}`}>
@@ -448,6 +463,11 @@ function App() {
                         }
                         event.dataTransfer.setData("text/plain", sq);
                         event.dataTransfer.effectAllowed = "move";
+                        const transparent = new Image(1, 1);
+                        transparent.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+                        event.dataTransfer.setDragImage(transparent, 0, 0);
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setDraggingPiece({ color: piece.color, type: piece.type, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
                         setSelected(sq);
                       }}
                       onDragOver={(event) => {
@@ -521,6 +541,15 @@ function App() {
                   </div>
                 )}
               </div>
+              {draggingPiece && (
+                <img
+                  className="drag-piece-preview"
+                  src={pieceImage(draggingPiece.color, draggingPiece.type as "p" | "n" | "b" | "r" | "q" | "k", pieceTheme)}
+                  alt=""
+                  aria-hidden="true"
+                  style={{ left: draggingPiece.x, top: draggingPiece.y }}
+                />
+              )}
             </div>
             {player(flipped ? black : white, flipped ? "b" : "w")}
             <div className="board-toolbar">
