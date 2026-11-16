@@ -11,6 +11,28 @@ export type RemoteGame = {
   url?: string;
   timeClass?: string;
 };
+export type ChessComProfile = {
+  username: string;
+  url: string;
+  player_id?: number;
+  title?: string;
+  name?: string;
+  avatar?: string;
+  location?: string;
+  country?: string;
+  joined?: number;
+  last_online?: number;
+  followers?: number;
+  status?: string;
+  is_streamer?: boolean;
+  is_verified?: boolean;
+};
+export type ChessComRating = {
+  last?: { rating?: number; date?: number; rd?: number };
+  best?: { rating?: number; date?: number; game?: string };
+  record?: { win?: number; loss?: number; draw?: number };
+};
+export type ChessComStats = Record<string, ChessComRating | undefined>;
 export type GameCursor =
   | {
       platform: "chesscom";
@@ -88,7 +110,7 @@ async function request(
       try {
         const response = await fetch(url, {
           headers: { Accept: accept },
-          cache: "no-cache",
+          cache: "default",
           signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         });
         if (response.status === 429) {
@@ -126,6 +148,34 @@ function readJson(text: string | null) {
   } catch {
     throw new ImportError("network");
   }
+}
+export async function fetchChessComProfile(
+  input: string,
+  signal?: AbortSignal,
+): Promise<{ profile: ChessComProfile; stats?: ChessComStats }> {
+  const { username } = resolveProfile(input, "chesscom");
+  const encoded = encodeURIComponent(username);
+  const text = await request(
+    `https://api.chess.com/pub/player/${encoded}`,
+    "application/json",
+    signal,
+  );
+  const profile = readJson(text) as ChessComProfile;
+  if (typeof profile.username !== "string" || typeof profile.url !== "string")
+    throw new ImportError("network");
+  let stats: ChessComStats | undefined;
+  try {
+    const statsText = await request(
+      `https://api.chess.com/pub/player/${encoded}/stats`,
+      "application/json",
+      signal,
+      true,
+    );
+    if (statsText) stats = readJson(statsText) as ChessComStats;
+  } catch (error) {
+    if (signal?.aborted) throw error;
+  }
+  return { profile, stats };
 }
 type ChessComRecord = {
   uuid?: string;

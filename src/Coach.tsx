@@ -139,7 +139,7 @@ export function Coach({
           </strong>
           <p>{lineSan(move.before, review.before.pv)}</p>
           <span>
-            Stockfish 18 · {t("Tiefe", "Depth")} {review.before.depth}
+            Stockfish 19 · {t("Tiefe", "Depth")} {review.before.depth}
           </span>
         </div>
       )}

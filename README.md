@@ -3,7 +3,7 @@
 
   # KnightLens
 
-  **Chess, understood. Review your games with Stockfish 18 and a coach that explains each move.**
+  **Chess, understood. Review your games with Stockfish 19 and a coach that explains each move.**
 
   [![Open KnightLens](https://img.shields.io/badge/Open_KnightLens-81B64C?style=for-the-badge&labelColor=262522)](https://pxnami.github.io/KnightLens/)
   [![Source](https://img.shields.io/badge/View_source-30372E?style=for-the-badge)](https://github.com/pxnami/KnightLens)
@@ -18,7 +18,7 @@
 
 ## What it does
 
-Import a PGN or find your recent public games on Chess.com and Lichess. KnightLens evaluates every position in your browser, marks important moves, and explains the position in German or English.
+Import a PGN, search public Chess.com profiles, or find recent games on Lichess. KnightLens evaluates every position in your browser, marks important moves, and explains the position in German or English.
 
 | Import | Understand | Explore |
 | --- | --- | --- |
@@ -26,8 +26,9 @@ Import a PGN or find your recent public games on Chess.com and Lichess. KnightLe
 | Browse public games and load older ones | Accuracy estimates for both players | Flip the board and show the best move |
 | Select games from multi-game PGN files | Position-based coach and engine continuations | Try legal moves and return to the game |
 | Chess.com and Lichess profiles | Clickable evaluation graph and category counts | Export the imported PGN |
+| Search public Chess.com ratings and archive | Independent move quality estimates | Choose from six board palettes |
 
-The interface follows the requested Chess.com review layout with Neo pieces, the Icy Sea board and a coach speech bubble. Artwork loads directly from official Chess.com image hosts and needs a network connection.
+Chess.com profile search accepts usernames or profile links and shows available public ratings, profile details, and archived standard games. Its archive loads 20 games at a time; use “Load older games” to continue.
 
 ## Interface
 
@@ -35,13 +36,15 @@ The interface follows the requested Chess.com review layout with Neo pieces, the
 
 ## Analysis
 
-Stockfish.js **18.0.8**, implementing **Stockfish 18**, runs in a Web Worker. The default single-threaded **Full NNUE** engine downloads about 113 MB. Select Lite for a smaller download of about 7 MB. Both builds work on GitHub Pages without cross-origin isolation headers. Search depth is selectable: 12, 16 (default), 18, or 22.
+Stockfish.js **19.0.0**, implementing **Stockfish 19**, runs in a Web Worker. The default single-threaded **Full NNUE** engine downloads about 95 MB. Select Lite for a smaller download of about 1.7 MB. These single-threaded builds work on GitHub Pages without cross-origin isolation headers. Search depth is selectable: 12, 16 (default), 18, or 22.
 
-Chess.com identifies Stockfish 18 as its current engine in its [engine documentation](https://support.chess.com/en/articles/9462780-how-do-the-chess-engines-on-chess-com-work). Sharing the engine version does not make the results identical: hardware, search depth, engine build and classification methods matter.
+This is the Stockfish 19 engine shown in the supplied Chess.com local-engine settings. KnightLens does not use Chess.com's private server-side review service or its separate Torch engine, so its ratings and move categories can differ from Chess.com. Results also depend on hardware, search time, and thread count.
 
 Move categories and accuracy are **independent estimates**, not Chess.com scores. The played move and preferred alternative are evaluated from the same root position, including game history. Classification uses evaluation loss, a logistic winning-chance estimate, the engine's preferred move and second candidate, a conservative sacrifice heuristic, and a small bundled opening repertoire. Brilliant detects a preferred move offering a higher-value piece for capture while preserving the evaluation; it does not prove a forced sacrifice. Book only recognizes bundled opening prefixes. Accuracy averages a bounded exponential transformation of winning-chance loss. Coach explanations are deterministic and based on actual moves, engine lines and board features; no external AI service is used.
 
-Public profile requests go directly to the respective platform. Both platforms load finished standard games in pages of 20, with an option to load older games. Chess.com searches all available archive months and checks the current month. Switching platforms or editing the profile cancels the previous search. Rate limits, upstream availability and browser network restrictions can affect imports; PGN import works independently. PGN analysis stays on-device. The interface language is stored locally. The last profile and imported PGN are stored in session storage for this browser tab; analysis results are recalculated after a reload.
+Public profile requests go directly to the respective platform. Both platforms load finished standard games in pages of 20, with an option to load older games. Chess.com searches all available archive months and checks the current month. Requests use the browser's HTTP cache and are serialized per platform; rate limits and upstream availability can affect imports. PGN analysis stays on-device. The interface language and board palette are stored locally. The last imported PGN is stored in session storage for this browser tab; analysis results are recalculated after a reload.
+
+KnightLens is independent and not affiliated with Chess.com or Lichess. Profile search requires an exact username or profile link; the Chess.com public API does not provide fuzzy username search.
 
 ## Run locally
 
@@ -67,9 +70,9 @@ npm run preview      # Preview production build
 
 | Area | Technology |
 | --- | --- |
-| Interface | React, TypeScript, Lucide, Chess.com-style review layout |
+| Interface | React, TypeScript, Lucide |
 | Chess rules and PGN | chess.js |
-| Evaluation | Stockfish.js 18, WebAssembly, Web Workers |
+| Evaluation | Stockfish.js 19, WebAssembly, Web Workers |
 | Build and checks | Vite, TypeScript, Vitest |
 | Delivery | GitHub Actions and GitHub Pages |
 
@@ -79,6 +82,6 @@ The [Pages workflow](.github/workflows/pages.yml) installs dependencies, runs te
 
 ## License and attribution
 
-KnightLens source is licensed under [GPL-3.0-or-later](LICENSE). Stockfish.js is GPLv3; its pinned source and build instructions are available in [nmrugg/stockfish.js at v18.0.8](https://github.com/nmrugg/stockfish.js/tree/v18.0.8). Engine files are distributed unmodified. See [THIRD_PARTY.md](THIRD_PARTY.md) for asset and dependency credits.
+KnightLens source is licensed under [GPL-3.0-or-later](LICENSE). Stockfish.js is GPLv3; its pinned source and build instructions are available in [nmrugg/stockfish.js at v19.0.0](https://github.com/nmrugg/stockfish.js/tree/v19.0.0). Engine files are distributed unmodified. See [THIRD_PARTY.md](THIRD_PARTY.md) for asset and dependency credits.
 
 Independent project, not affiliated with Chess.com or Lichess.

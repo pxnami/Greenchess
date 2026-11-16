@@ -15,7 +15,7 @@ export class Engine {
   };
   constructor(full = true) {
     this.worker = new Worker(
-      `${import.meta.env.BASE_URL}engine/stockfish-18-${full ? "single" : "lite-single"}.js`,
+      `${import.meta.env.BASE_URL}engine/stockfish-19-${full ? "single" : "lite-single"}.js`,
     );
     this.worker.onmessage = (event) => {
       for (const line of String(event.data).split(/\r?\n/))

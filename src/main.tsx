@@ -1,6 +1,7 @@
 import { Sidebar } from "./Sidebar";
 import { Coach } from "./Coach";
-import { pieceImage, themeAssets } from "./theme";
+import { pieceImage, themeAssets, boardThemes, type BoardTheme } from "./theme";
+import { PlayerProfile } from "./PlayerProfile";
 import { ImportDialog } from "./ImportDialog";
 import { EvaluationGraph } from "./EvaluationGraph";
 import { Overview } from "./Overview";
@@ -68,6 +69,15 @@ function App() {
   const [fullEngine, setFullEngine] = useState(true);
   const [analysisStage, setAnalysisStage] = useState("idle");
   const [showSettings, setShowSettings] = useState(false);
+  const [surface, setSurface] = useState<"analysis" | "profile">("analysis");
+  const [boardTheme, setBoardTheme] = useState<BoardTheme>(() => {
+    try {
+      const saved = localStorage.getItem("knightlens-board-theme") as BoardTheme | null;
+      return saved && boardThemes.includes(saved) ? saved : "ice";
+    } catch {
+      return "ice";
+    }
+  });
   const [tab, setTab] = useState("moves"),
     [explaining, setExplaining] = useState(false),
     [showBest, setShowBest] = useState(false),
@@ -109,6 +119,13 @@ function App() {
       /* Preference storage is optional. */
     }
   }, [lang]);
+  useEffect(() => {
+    try {
+      localStorage.setItem("knightlens-board-theme", boardTheme);
+    } catch {
+      /* Preference storage is optional. */
+    }
+  }, [boardTheme]);
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(
@@ -313,16 +330,31 @@ function App() {
     <>
       <Sidebar
         lang={lang}
-        tab={tab}
+        tab={surface === "profile" ? "profile" : tab}
         setLang={setLang}
         onImport={() => {
+          setSurface("analysis");
           setImporting(true);
           setError("");
         }}
-        onMoves={() => setTab("moves")}
-        onOverview={() => setTab("overview")}
+        onMoves={() => { setSurface("analysis"); setTab("moves"); }}
+        onOverview={() => { setSurface("analysis"); setTab("overview"); }}
+        onProfile={() => { setSurface("profile"); setImporting(false); }}
       />
-      <main>
+      {surface === "profile" ? (
+        <PlayerProfile
+          lang={lang}
+          boardTheme={boardTheme}
+          onLoad={(pgn) => {
+            try {
+              load(parseGame(pgn));
+              setSurface("analysis");
+            } catch {
+              setError(t("Diese Partie kann nicht geladen werden.", "This game could not be loaded."));
+            }
+          }}
+        />
+      ) : <main>
         <div className="workspace">
           <section
             className="board-column"
@@ -346,8 +378,8 @@ function App() {
                 <span>{score}</span>
               </div>
               <div
-                className={`board${flipped ? " flipped" : ""}`}
-                style={{ backgroundImage: `url(${themeAssets.board})` }}
+                className={`board board-theme-${boardTheme}${flipped ? " flipped" : ""}`}
+                style={{ backgroundImage: boardTheme === "ice" ? `url(${themeAssets.board})` : undefined }}
               >
                 {squares.map((sq, i) => {
                   const piece = board.get(sq);
@@ -467,7 +499,7 @@ function App() {
               <ChartNoAxesCombined size={20} />
               <h2>{t("Partieanalyse", "Game review")}</h2>
               <span className="engine-badge">
-                Stockfish 18 {fullEngine ? "NNUE" : "Lite"} · {depth}
+                Stockfish 19 {fullEngine ? "NNUE" : "Lite"} · {depth}
               </span>
               <button
                 className="settings-button"
@@ -499,8 +531,8 @@ function App() {
                     onChange={(e) => setFullEngine(e.target.checked)}
                   />
                   {t(
-                    "Volle NNUE-Engine laden (113 MB)",
-                    "Load full NNUE engine (113 MB)",
+                    "Volle NNUE-Engine laden (95 MB)",
+                    "Load full NNUE engine (95 MB)",
                   )}
                 </label>
                 <div className="analysis-controls">
@@ -521,6 +553,20 @@ function App() {
                       </option>
                     </select>
                   </label>
+                  <label>
+                    {t("Brett", "Board")}
+                    <select
+                      value={boardTheme}
+                      onChange={(e) => setBoardTheme(e.target.value as BoardTheme)}
+                    >
+                      <option value="ice">{t("Eis", "Icy sea")}</option>
+                      <option value="wood">{t("Holz", "Wood")}</option>
+                      <option value="classic">{t("Klassisch", "Classic")}</option>
+                      <option value="forest">{t("Wald", "Forest")}</option>
+                      <option value="slate">{t("Schiefer", "Slate")}</option>
+                      <option value="rose">{t("Rosé", "Rose")}</option>
+                    </select>
+                  </label>
                 </div>
               </div>
             )}{" "}
@@ -531,11 +577,11 @@ function App() {
                   {analysisStage === "loading"
                     ? t(
                         fullEngine
-                          ? "Lade volle Stockfish-Engine (113 MB) …"
-                          : "Lade Stockfish Lite …",
+                          ? "Lade volle Stockfish-Engine (95 MB) …"
+                          : "Lade Stockfish Lite (1,7 MB) …",
                         fullEngine
-                          ? "Loading full Stockfish engine (113 MB) …"
-                          : "Loading Stockfish Lite …",
+                          ? "Loading full Stockfish engine (95 MB) …"
+                          : "Loading Stockfish Lite (1.7 MB) …",
                       )
                     : `${t("Analysiere", "Analyzing")} ${reviews.length}/${game?.moves.length} · ${Math.round(progress * 100)}%`}
                 </span>
@@ -676,7 +722,7 @@ function App() {
           <span>
             {t("Unabhängiges Projekt", "Independent project")} ·{" "}
             <a
-              href="https://github.com/nmrugg/stockfish.js/tree/v18.0.8"
+              href="https://github.com/nmrugg/stockfish.js/tree/v19.0.0"
               target="_blank"
               rel="noreferrer"
             >
@@ -684,7 +730,7 @@ function App() {
             </a>
           </span>
         </footer>
-      </main>
+      </main>}
       {importing && (
         <ImportDialog
           lang={lang}

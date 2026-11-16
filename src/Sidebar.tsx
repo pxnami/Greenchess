@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ExternalLink,
   BookOpen,
+  Search,
 } from "lucide-react";
 import type { Lang } from "./chess";
 import { pieceImage } from "./theme";
@@ -17,6 +18,7 @@ type Props = {
   onImport: () => void;
   onMoves: () => void;
   onOverview: () => void;
+  onProfile: () => void;
 };
 
 export function Sidebar({
@@ -26,6 +28,7 @@ export function Sidebar({
   onImport,
   onMoves,
   onOverview,
+  onProfile,
 }: Props) {
   const t = (de: string, en: string) => (lang === "de" ? de : en);
   return (
@@ -49,6 +52,14 @@ export function Sidebar({
         >
           <ChartNoAxesCombined />
           <span>{t("Analysieren", "Analyze")}</span>
+        </button>
+        <button
+          className={tab === "profile" ? "nav-item active" : "nav-item"}
+          onClick={onProfile}
+          aria-label={t("Spielersuche", "Player search")}
+        >
+          <Search />
+          <span>{t("Spielersuche", "Player search")}</span>
         </button>
         <button
           className="nav-item"

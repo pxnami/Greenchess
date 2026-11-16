@@ -1,7 +1,7 @@
 {
   "name": "knightlens",
   "version": "1.0.0",
-  "description": "Bilingual chess game analysis with local Stockfish 18.",
+  "description": "Bilingual chess game analysis with local Stockfish 19.",
   "main": "index.js",
   "scripts": {
     "dev": "node scripts/prepare-engine.mjs && vite --host 127.0.0.1",
@@ -18,7 +18,7 @@
     "lucide-react": "^1.61.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "stockfish": "18.0.8"
+    "stockfish": "19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
