@@ -101,7 +101,7 @@ function App() {
     [showBest, setShowBest] = useState(false),
     [variation, setVariation] = useState<{ fen: string; san: string }>();
   const [selected, setSelected] = useState<Square>();
-  const [draggingPiece, setDraggingPiece] = useState<{ color: "w" | "b"; type: string; x: number; y: number }>();
+  const [draggingPiece, setDraggingPiece] = useState<{ color: "w" | "b"; type: "p" | "n" | "b" | "r" | "q" | "k"; from: Square; x: number; y: number }>();
   const engine = useRef<Engine | null>(null),
     run = useRef(0);
   const fen = variation?.fen || game?.fens[ply] || new Chess().fen();
@@ -349,18 +349,23 @@ function App() {
     : [];
   useEffect(() => {
     if (!draggingPiece) return;
+    const finishDrag = (event: PointerEvent) => {
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".square");
+      const to = target?.getAttribute("aria-label")?.slice(0, 2) as Square | undefined;
+      if (to && legal.includes(to)) movePiece(draggingPiece.from, to);
+      setDraggingPiece(undefined);
+    };
     const movePreview = (event: PointerEvent) =>
       setDraggingPiece((piece) => piece ? { ...piece, x: event.clientX, y: event.clientY } : undefined);
-    const clearPreview = () => setDraggingPiece(undefined);
     window.addEventListener("pointermove", movePreview);
-    window.addEventListener("pointerup", clearPreview, { once: true });
-    window.addEventListener("dragend", clearPreview, { once: true });
+    window.addEventListener("pointerup", finishDrag, { once: true });
+    window.addEventListener("pointercancel", finishDrag, { once: true });
     return () => {
       window.removeEventListener("pointermove", movePreview);
-      window.removeEventListener("pointerup", clearPreview);
-      window.removeEventListener("dragend", clearPreview);
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", finishDrag);
     };
-  }, [draggingPiece]);
+  }, [draggingPiece, legal]);
   const player = (name: string, color: string) => (
     <div className="player">
       <div className={`player-piece ${color}`}>
@@ -455,28 +460,14 @@ function App() {
                       key={sq}
                       className={`square ${(Number(sq[1]) + sq.charCodeAt(0)) % 2 === 0 ? "dark" : "light"} ${move && (move.from === sq || move.to === sq) && !variation ? "last" : ""} ${selected === sq ? "selected" : ""}`}
                       onClick={() => squareClick(sq)}
-                      draggable={Boolean(game && piece?.color === board.turn())}
-                      onDragStart={(event) => {
-                        if (!piece || piece.color !== board.turn() || !game) {
-                          event.preventDefault();
-                          return;
-                        }
-                        event.dataTransfer.setData("text/plain", sq);
-                        event.dataTransfer.effectAllowed = "move";
-                        const transparent = new Image(1, 1);
-                        transparent.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-                        event.dataTransfer.setDragImage(transparent, 0, 0);
-                        const rect = event.currentTarget.getBoundingClientRect();
-                        setDraggingPiece({ color: piece.color, type: piece.type, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
-                        setSelected(sq);
-                      }}
-                      onDragOver={(event) => {
-                        if (selected && legal.includes(sq)) event.preventDefault();
-                      }}
-                      onDrop={(event) => {
+                      onDragStart={(event) => event.preventDefault()}
+                      onPointerDown={(event) => {
+                        if (!piece || piece.color !== board.turn() || !game || event.button !== 0) return;
                         event.preventDefault();
-                        const from = event.dataTransfer.getData("text/plain") as Square;
-                        if (from && legal.includes(sq)) movePiece(from, sq);
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setDraggingPiece({ color: piece.color, type: piece.type, from: sq, x: event.clientX || rect.left + rect.width / 2, y: event.clientY || rect.top + rect.height / 2 });
+                        setSelected(sq);
                       }}
                       title={piece?.color === board.turn() ? t("Ziehen oder anklicken", "Drag or click") : undefined}
                       aria-label={`${sq}${piece ? " " + piece.color + piece.type : ""}`}

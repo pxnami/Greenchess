@@ -293,10 +293,11 @@ h1 {
 .square.selected {
   box-shadow: inset 0 0 0 4px #ebc96c;
 }
-.square[draggable="true"] {
-  cursor: grab;
+.square {
+  touch-action: none;
+  user-select: none;
 }
-.square[draggable="true"]:active {
+.square:has(img):active {
   cursor: grabbing;
 }
 .square img {
