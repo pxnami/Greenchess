@@ -101,7 +101,8 @@ function App() {
     [showBest, setShowBest] = useState(false),
     [variation, setVariation] = useState<{ fen: string; san: string }>();
   const [selected, setSelected] = useState<Square>();
-  const [draggingPiece, setDraggingPiece] = useState<{ color: "w" | "b"; type: "p" | "n" | "b" | "r" | "q" | "k"; from: Square; x: number; y: number }>();
+  const [draggingPiece, setDraggingPiece] = useState<{ color: "w" | "b"; type: "p" | "n" | "b" | "r" | "q" | "k"; from: Square }>();
+  const dragPosition = useRef({ x: 0, y: 0 });
   const engine = useRef<Engine | null>(null),
     run = useRef(0);
   const fen = variation?.fen || game?.fens[ply] || new Chess().fen();
@@ -355,8 +356,14 @@ function App() {
       if (to && legal.includes(to)) movePiece(draggingPiece.from, to);
       setDraggingPiece(undefined);
     };
-    const movePreview = (event: PointerEvent) =>
-      setDraggingPiece((piece) => piece ? { ...piece, x: event.clientX, y: event.clientY } : undefined);
+    const preview = document.querySelector<HTMLImageElement>(".drag-piece-preview");
+    const movePreview = (event: PointerEvent) => {
+      dragPosition.current = { x: event.clientX, y: event.clientY };
+      if (preview) {
+        preview.style.left = `${event.clientX}px`;
+        preview.style.top = `${event.clientY}px`;
+      }
+    };
     window.addEventListener("pointermove", movePreview);
     window.addEventListener("pointerup", finishDrag, { once: true });
     window.addEventListener("pointercancel", finishDrag, { once: true });
@@ -464,9 +471,9 @@ function App() {
                       onPointerDown={(event) => {
                         if (!piece || piece.color !== board.turn() || !game || event.button !== 0) return;
                         event.preventDefault();
-                        event.currentTarget.setPointerCapture(event.pointerId);
                         const rect = event.currentTarget.getBoundingClientRect();
-                        setDraggingPiece({ color: piece.color, type: piece.type, from: sq, x: event.clientX || rect.left + rect.width / 2, y: event.clientY || rect.top + rect.height / 2 });
+                        dragPosition.current = { x: event.clientX || rect.left + rect.width / 2, y: event.clientY || rect.top + rect.height / 2 };
+                        setDraggingPiece({ color: piece.color, type: piece.type, from: sq });
                         setSelected(sq);
                       }}
                       title={piece?.color === board.turn() ? t("Ziehen oder anklicken", "Drag or click") : undefined}
@@ -538,7 +545,7 @@ function App() {
                   src={pieceImage(draggingPiece.color, draggingPiece.type as "p" | "n" | "b" | "r" | "q" | "k", pieceTheme)}
                   alt=""
                   aria-hidden="true"
-                  style={{ left: draggingPiece.x, top: draggingPiece.y }}
+                  style={{ left: dragPosition.current.x, top: dragPosition.current.y }}
                 />
               )}
             </div>
