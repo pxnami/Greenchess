@@ -48,6 +48,12 @@ function restoreGame(): Game | undefined {
   }
 }
 function App() {
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+    void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
+      scope: import.meta.env.BASE_URL,
+    }).catch(() => undefined);
+  }, []);
   const [lang, setLang] = useState<Lang>(() => {
     try {
       return localStorage.getItem("knightlens-language") === "en" ? "en" : "de";
@@ -71,6 +77,8 @@ function App() {
     try { return localStorage.getItem("knightlens-lite-engine") !== "true"; }
     catch { return true; }
   });
+  const [quickMode, setQuickMode] = useState(false);
+  const savedEngineSettings = useRef<{ fullEngine: boolean; depth: number } | undefined>(undefined);
   const [analysisStage, setAnalysisStage] = useState("idle");
   const [showSettings, setShowSettings] = useState(false);
   const [surface, setSurface] = useState<"analysis" | "profile">("analysis");
@@ -283,25 +291,42 @@ function App() {
     a.click();
     URL.revokeObjectURL(url);
   }
+  function movePiece(from: Square, to: Square) {
+    if (!game) return;
+    try {
+      const candidate = new Chess(fen);
+      const result = candidate.move({ from, to, promotion: "q" });
+      setVariation({ fen: candidate.fen(), san: result.san });
+      setSelected(undefined);
+      setPlaying(false);
+    } catch {
+      setSelected(undefined);
+    }
+  }
   function squareClick(square: Square) {
     if (!game) return;
-    if (selected) {
-      try {
-        const candidate = new Chess(fen);
-        const m = candidate.move({
-          from: selected,
-          to: square,
-          promotion: "q",
-        });
-        setVariation({ fen: candidate.fen(), san: m.san });
-        setSelected(undefined);
-        setPlaying(false);
-        return;
-      } catch {
-        setSelected(undefined);
-      }
+    if (selected && legal.includes(square)) {
+      movePiece(selected, square);
+      return;
     }
     if (board.get(square)?.color === board.turn()) setSelected(square);
+    else setSelected(undefined);
+  }
+  function toggleQuickMode() {
+    if (quickMode) {
+      const previous = savedEngineSettings.current;
+      if (previous) {
+        setFullEngine(previous.fullEngine);
+        setDepth(previous.depth);
+      }
+      savedEngineSettings.current = undefined;
+      setQuickMode(false);
+      return;
+    }
+    savedEngineSettings.current = { fullEngine, depth };
+    setFullEngine(false);
+    setDepth(12);
+    setQuickMode(true);
   }
   const squares = Array.from(
     { length: 64 },
@@ -415,6 +440,25 @@ function App() {
                       key={sq}
                       className={`square ${(Number(sq[1]) + sq.charCodeAt(0)) % 2 === 0 ? "dark" : "light"} ${move && (move.from === sq || move.to === sq) && !variation ? "last" : ""} ${selected === sq ? "selected" : ""}`}
                       onClick={() => squareClick(sq)}
+                      draggable={Boolean(game && piece?.color === board.turn())}
+                      onDragStart={(event) => {
+                        if (!piece || piece.color !== board.turn() || !game) {
+                          event.preventDefault();
+                          return;
+                        }
+                        event.dataTransfer.setData("text/plain", sq);
+                        event.dataTransfer.effectAllowed = "move";
+                        setSelected(sq);
+                      }}
+                      onDragOver={(event) => {
+                        if (selected && legal.includes(sq)) event.preventDefault();
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const from = event.dataTransfer.getData("text/plain") as Square;
+                        if (from && legal.includes(sq)) movePiece(from, sq);
+                      }}
+                      title={piece?.color === board.turn() ? t("Ziehen oder anklicken", "Drag or click") : undefined}
                       aria-label={`${sq}${piece ? " " + piece.color + piece.type : ""}`}
                     >
                       <span className="rank">{i % 8 === 0 ? sq[1] : ""}</span>
@@ -545,12 +589,23 @@ function App() {
             />
             {showSettings && (
               <div className="engine-settings">
+                <button
+                  className={`quick-mode${quickMode ? " active" : ""}`}
+                  type="button"
+                  disabled={busy}
+                  aria-pressed={quickMode}
+                  onClick={toggleQuickMode}
+                >
+                  {quickMode
+                    ? t("Schnellmodus aktiv · Lite · Tiefe 12", "Quick mode on · Lite · Depth 12")
+                    : t("Schnellmodus · Lite · Tiefe 12", "Quick mode · Lite · Depth 12")}
+                </button>
                 <label className="engine-choice">
                   <input
                     type="checkbox"
                     checked={fullEngine}
                     disabled={busy}
-                    onChange={(e) => setFullEngine(e.target.checked)}
+                    onChange={(e) => { setQuickMode(false); savedEngineSettings.current = undefined; setFullEngine(e.target.checked); }}
                   />
                   {t(
                     "Volle NNUE-Engine laden (95 MB)",
@@ -563,7 +618,7 @@ function App() {
                     <select
                       value={depth}
                       disabled={busy}
-                      onChange={(e) => setDepth(Number(e.target.value))}
+                      onChange={(e) => { setQuickMode(false); savedEngineSettings.current = undefined; setDepth(Number(e.target.value)); }}
                     >
                       <option value={12}>12 · {t("Schnell", "Quick")}</option>
                       <option value={16}>
