@@ -36,7 +36,7 @@ Chess.com profile search accepts usernames or profile links and shows available 
 
 ## Analysis
 
-Stockfish.js **19.0.0**, implementing **Stockfish 19**, runs in a Web Worker. The default single-threaded **Full NNUE** engine downloads about 95 MB. Select Lite for a smaller download of about 1.7 MB. These single-threaded builds work on GitHub Pages without cross-origin isolation headers. Search depth is selectable: 12, 16 (default), 18, or 22.
+Stockfish.js **19.0.0**, implementing **Stockfish 19**, runs in a Web Worker. The default single-threaded **Full NNUE** engine downloads about 95 MB. Select Lite for a smaller download of about 1.7 MB. These single-threaded builds work on GitHub Pages without cross-origin isolation headers. Search depth is selectable: 12, 16, 18 (default), 22, or 24.
 
 This is the Stockfish 19 engine shown in the supplied Chess.com local-engine settings. KnightLens does not use Chess.com's private server-side review service or its separate Torch engine, so its ratings and move categories can differ from Chess.com. Results also depend on hardware, search time, and thread count.
 

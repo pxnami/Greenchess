@@ -1,6 +1,6 @@
 import { Sidebar } from "./Sidebar";
 import { Coach } from "./Coach";
-import { pieceImage, themeAssets, boardThemes, type BoardTheme } from "./theme";
+import { pieceImage, themeAssets, boardThemes, pieceThemes, type BoardTheme, type PieceTheme } from "./theme";
 import { PlayerProfile } from "./PlayerProfile";
 import { ImportDialog } from "./ImportDialog";
 import { EvaluationGraph } from "./EvaluationGraph";
@@ -34,6 +34,7 @@ import {
 } from "./chess";
 import { Engine } from "./engine";
 import { analyzeGame } from "./analysis";
+import { fetchChessComProfile } from "./api";
 
 import "./style.css";
 import "./chesscom.css";
@@ -64,9 +65,12 @@ function App() {
   const [reviews, setReviews] = useState<Review[]>([]),
     [positions, setPositions] = useState<Position[]>([]),
     [busy, setBusy] = useState(false),
-    [depth, setDepth] = useState(16),
+    [depth, setDepth] = useState(18),
     [progress, setProgress] = useState(0);
-  const [fullEngine, setFullEngine] = useState(true);
+  const [fullEngine, setFullEngine] = useState(() => {
+    try { return localStorage.getItem("knightlens-lite-engine") !== "true"; }
+    catch { return true; }
+  });
   const [analysisStage, setAnalysisStage] = useState("idle");
   const [showSettings, setShowSettings] = useState(false);
   const [surface, setSurface] = useState<"analysis" | "profile">("analysis");
@@ -77,6 +81,12 @@ function App() {
     } catch {
       return "ice";
     }
+  });
+  const [pieceTheme, setPieceTheme] = useState<PieceTheme>(() => {
+    try {
+      const saved = localStorage.getItem("knightlens-piece-theme") as PieceTheme | null;
+      return saved && pieceThemes.includes(saved) ? saved : "neo";
+    } catch { return "neo"; }
   });
   const [tab, setTab] = useState("moves"),
     [explaining, setExplaining] = useState(false),
@@ -126,6 +136,17 @@ function App() {
       /* Preference storage is optional. */
     }
   }, [boardTheme]);
+  useEffect(() => {
+    try {
+      localStorage.setItem("knightlens-piece-theme", pieceTheme);
+      localStorage.setItem("knightlens-lite-engine", String(!fullEngine));
+    } catch { /* Preferences are optional. */ }
+  }, [pieceTheme, fullEngine]);
+  useEffect(() => {
+    document.title = game
+      ? `${game.headers.White || "White"} vs. ${game.headers.Black || "Black"} | KnightLens`
+      : "KnightLens — Chess, understood.";
+  }, [game]);
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(
@@ -312,7 +333,9 @@ function App() {
   const player = (name: string, color: string) => (
     <div className="player">
       <div className={`player-piece ${color}`}>
-        <img src={pieceImage(color, "p")} alt="" />
+        {game?.avatars?.[color === "w" ? "white" : "black"] ? (
+          <img src={game.avatars[color === "w" ? "white" : "black"]} alt="" />
+        ) : <img src={pieceImage(color, "p", pieceTheme)} alt="" />}
       </div>
       <div>
         <strong>{name}</strong>
@@ -345,10 +368,23 @@ function App() {
         <PlayerProfile
           lang={lang}
           boardTheme={boardTheme}
-          onLoad={(pgn) => {
+          pieceTheme={pieceTheme}
+          onLoad={(pgn, avatars, usernames) => {
             try {
-              load(parseGame(pgn));
+              const parsed = parseGame(pgn);
+              parsed.avatars = { ...avatars };
+              load(parsed);
               setSurface("analysis");
+              if (usernames) {
+                const missing = usernames.white.toLowerCase() === parsed.headers.White?.toLowerCase() ? "black" : "white";
+                const opponent = usernames[missing];
+                void fetchChessComProfile(opponent).then(({ profile }) => {
+                  if (!profile.avatar) return;
+                  setGame((current) => current?.pgn === parsed.pgn
+                    ? { ...current, avatars: { ...current.avatars, [missing]: profile.avatar } }
+                    : current);
+                }).catch(() => undefined);
+              }
             } catch {
               setError(t("Diese Partie kann nicht geladen werden.", "This game could not be loaded."));
             }
@@ -395,7 +431,7 @@ function App() {
                       {piece && (
                         <img
                           draggable={false}
-                          src={pieceImage(piece.color, piece.type)}
+                          src={pieceImage(piece.color, piece.type, pieceTheme)}
                           alt={`${piece.color}${piece.type}`}
                         />
                       )}{" "}
@@ -551,6 +587,7 @@ function App() {
                       <option value={22}>
                         22 · {t("Sehr gründlich", "Very deep")}
                       </option>
+                      <option value={24}>24 · {t("Maximal", "Maximum")}</option>
                     </select>
                   </label>
                   <label>
@@ -565,6 +602,16 @@ function App() {
                       <option value="forest">{t("Wald", "Forest")}</option>
                       <option value="slate">{t("Schiefer", "Slate")}</option>
                       <option value="rose">{t("Rosé", "Rose")}</option>
+                    </select>
+                  </label>
+                  <label>
+                    {t("Figurenstil", "Piece set")}
+                    <select value={pieceTheme} onChange={(e) => setPieceTheme(e.target.value as PieceTheme)}>
+                      <option value="neo">NEO</option>
+                      <option value="classic">Classic</option>
+                      <option value="neo_wood">NEO Wood</option>
+                      <option value="alpha">Alpha</option>
+                      <option value="merida">Merida</option>
                     </select>
                   </label>
                 </div>
@@ -638,6 +685,8 @@ function App() {
                 lang={lang}
                 reviews={reviews}
                 game={game}
+                avatars={game?.avatars}
+                pieceTheme={pieceTheme}
                 ply={ply}
                 changePly={changePly}
                 setTab={setTab}

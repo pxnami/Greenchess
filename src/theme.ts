@@ -7,7 +7,16 @@ export const themeAssets = {
 
 export const boardThemes = ["ice", "wood", "classic", "forest", "slate", "rose"] as const;
 export type BoardTheme = (typeof boardThemes)[number];
+export const pieceThemes = ["neo", "classic", "neo_wood", "alpha", "merida"] as const;
+export type PieceTheme = (typeof pieceThemes)[number];
 
-export function pieceImage(color: string, piece: string) {
-  return `${themeAssets.pieces}/${color}${piece}.png`;
+export function pieceImage(color: string, piece: string, theme: PieceTheme = "neo") {
+  const folders: Record<PieceTheme, string> = {
+    neo: "neo",
+    classic: "classic",
+    neo_wood: "neo_wood",
+    alpha: "alpha",
+    merida: "merida",
+  };
+  return `https://images.chesscomfiles.com/chess-themes/pieces/${folders[theme]}/150/${color}${piece}.png`;
 }

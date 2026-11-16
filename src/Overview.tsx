@@ -1,5 +1,5 @@
 import { categories, labels, type Game, type Lang, type Review } from "./chess";
-import { pieceImage } from "./theme";
+import { pieceImage, type PieceTheme } from "./theme";
 type Translate = (de: string, en: string) => string;
 type Props = {
   t: Translate;
@@ -12,6 +12,8 @@ type Props = {
   ply: number;
   changePly: (ply: number) => void;
   setTab: (tab: string) => void;
+  avatars?: { white?: string; black?: string };
+  pieceTheme: PieceTheme;
 };
 export function Overview({
   t,
@@ -24,13 +26,15 @@ export function Overview({
   ply,
   changePly,
   setTab,
+  avatars,
+  pieceTheme,
 }: Props) {
   return (
     <div className="overview">
       <div className="accuracy">
         <div>
           <span>{white}</span>
-          <img className="summary-avatar" src={pieceImage("w", "p")} alt="" />
+          <img className="summary-avatar" src={avatars?.white || pieceImage("w", "p", pieceTheme)} alt="" />
           <strong>
             {accuracy("w")}
             <small>%</small>
@@ -38,7 +42,7 @@ export function Overview({
         </div>
         <div>
           <span>{black}</span>
-          <img className="summary-avatar" src={pieceImage("b", "p")} alt="" />
+          <img className="summary-avatar" src={avatars?.black || pieceImage("b", "p", pieceTheme)} alt="" />
           <strong>
             {accuracy("b")}
             <small>%</small>

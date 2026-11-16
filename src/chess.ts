@@ -46,6 +46,7 @@ export type Game = {
   moves: Move[];
   fens: string[];
   headers: Record<string, string>;
+  avatars?: { white?: string; black?: string };
 };
 export function parseGame(pgn: string): Game {
   const chess = new Chess();

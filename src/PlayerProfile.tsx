@@ -17,13 +17,14 @@ import {
   type RemoteGame,
 } from "./api";
 import type { Lang } from "./chess";
-import { pieceImage, themeAssets } from "./theme";
+import { pieceImage, themeAssets, type PieceTheme } from "./theme";
 
 type Props = {
   lang: Lang;
   boardTheme: string;
+  pieceTheme: PieceTheme;
   initialUsername?: string;
-  onLoad: (pgn: string) => void;
+  onLoad: (pgn: string, avatars?: { white?: string; black?: string }, usernames?: { white: string; black: string }) => void;
 };
 type PlayerData = { profile: ChessComProfile; stats?: ChessComStats };
 const formats = ["all", "bullet", "blitz", "rapid", "daily"] as const;
@@ -35,7 +36,7 @@ function dateLabel(date: string, lang: Lang) {
   }).format(new Date(date));
 }
 
-function MiniBoard({ pgn, boardTheme }: { pgn: string; boardTheme: string }) {
+function MiniBoard({ pgn, boardTheme, pieceTheme }: { pgn: string; boardTheme: string; pieceTheme: PieceTheme }) {
   const squares = new Chess();
   try {
     squares.loadPgn(pgn);
@@ -56,7 +57,7 @@ function MiniBoard({ pgn, boardTheme }: { pgn: string; boardTheme: string }) {
           >
             {piece && (
               <img
-                src={pieceImage(piece.color, piece.type)}
+                src={pieceImage(piece.color, piece.type, pieceTheme)}
                 alt=""
                 loading="lazy"
               />
@@ -71,6 +72,7 @@ function MiniBoard({ pgn, boardTheme }: { pgn: string; boardTheme: string }) {
 export function PlayerProfile({
   lang,
   boardTheme,
+  pieceTheme,
   initialUsername = "",
   onLoad,
 }: Props) {
@@ -449,6 +451,14 @@ export function PlayerProfile({
                 <div className={`profile-game-grid ${layout}`}>
                   {filteredGames.map((game, index) => {
                     const title = `${game.white} ${game.result} ${game.black}`;
+                    const loadGame = () => onLoad(
+                      game.pgn,
+                      {
+                        white: game.white.toLowerCase() === profile.username.toLowerCase() ? profile.avatar : undefined,
+                        black: game.black.toLowerCase() === profile.username.toLowerCase() ? profile.avatar : undefined,
+                      },
+                      { white: game.white, black: game.black },
+                    );
                     return (
                       <article
                         className="profile-game-card"
@@ -456,10 +466,10 @@ export function PlayerProfile({
                       >
                         <button
                           className="profile-game-load"
-                          onClick={() => onLoad(game.pgn)}
+                          onClick={loadGame}
                           aria-label={`${t("Partie analysieren", "Analyze game")}: ${title}`}
                         >
-                          <MiniBoard pgn={game.pgn} boardTheme={boardTheme} />
+                          <MiniBoard pgn={game.pgn} boardTheme={boardTheme} pieceTheme={pieceTheme} />
                         </button>
                         <div className="profile-game-info">
                           <span className="profile-time-class">
@@ -473,7 +483,7 @@ export function PlayerProfile({
                           <div>
                             <button
                               className="text-button"
-                              onClick={() => onLoad(game.pgn)}
+                              onClick={loadGame}
                             >
                               {t("Analysieren", "Analyze game")}{" "}
                               <ArrowUpRight size={14} />
