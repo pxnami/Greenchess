@@ -6,6 +6,7 @@ import { ImportDialog } from "./ImportDialog";
 import { EvaluationGraph } from "./EvaluationGraph";
 import { Overview } from "./Overview";
 import { MoveList } from "./MoveList";
+import { MoveBadge } from "./MoveBadge";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Chess, type Square } from "chess.js";
@@ -26,7 +27,6 @@ import {
 import {
   parseGame,
   formatEvaluation,
-  labels,
   type Game,
   type Lang,
   type Review,
@@ -270,16 +270,7 @@ function App() {
       : "—";
   };
   const badge = (r: Review) => {
-    const l = labels[r.category];
-    return (
-      <span
-        className="badge"
-        style={{ background: l[3], color: "#fff" }}
-        title={l[lang === "de" ? 0 : 1]}
-      >
-        {l[2]}
-      </span>
-    );
+    return <MoveBadge category={r.category} lang={lang} />;
   };
   function download() {
     if (!game) return;
@@ -437,12 +428,7 @@ function App() {
                       )}{" "}
                       {legal.includes(sq) && <span className="legal-dot" />}
                       {move?.to === sq && review && !variation && (
-                        <span
-                          className="board-badge"
-                          style={{ background: labels[review.category][3] }}
-                        >
-                          {labels[review.category][2]}
-                        </span>
+                        <MoveBadge category={review.category} lang={lang} className="board-badge" />
                       )}
                     </button>
                   );
@@ -532,7 +518,7 @@ function App() {
           </section>
           <aside className="analysis-panel" data-view={tab}>
             <div className="panel-heading">
-              <ChartNoAxesCombined size={20} />
+              <img className="analysis-logo" src={themeAssets.analysisIcon} alt="" />
               <h2>{t("Partieanalyse", "Game review")}</h2>
               <span className="engine-badge">
                 Stockfish 19 {fullEngine ? "NNUE" : "Lite"} · {depth}

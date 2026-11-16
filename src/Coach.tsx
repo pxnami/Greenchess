@@ -8,6 +8,7 @@ import {
   type Review,
 } from "./chess";
 import { themeAssets } from "./theme";
+import { MoveBadge } from "./MoveBadge";
 type Props = {
   game?: Game;
   ply: number;
@@ -81,10 +82,8 @@ export function Coach({
         />
         <div className="coach-bubble">
           <div className="coach-verdict">
-            {label && (
-              <span className="badge" style={{ background: label[3] }}>
-                {label[2]}
-              </span>
+            {review && (
+              <MoveBadge category={review.category} lang={lang} />
             )}
             <strong>
               {variation

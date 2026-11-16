@@ -1,5 +1,6 @@
 import { categories, labels, type Game, type Lang, type Review } from "./chess";
 import { pieceImage, type PieceTheme } from "./theme";
+import { MoveBadge } from "./MoveBadge";
 type Translate = (de: string, en: string) => string;
 type Props = {
   t: Translate;
@@ -67,12 +68,7 @@ export function Overview({
           {["w", "b"].map((color) => (
             <span className="category-score" key={color}>
               {color === "b" && (
-                <span
-                  className="badge"
-                  style={{ background: labels[category][3] }}
-                >
-                  {labels[category][2]}
-                </span>
+                <MoveBadge category={category} lang={lang} />
               )}
               <button
                 key={color}
