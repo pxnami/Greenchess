@@ -133,7 +133,7 @@ main {
   padding: 14px 24px 8px;
 }
 .workspace {
-  grid-template-columns: minmax(0, 1fr) minmax(390px, 480px);
+  grid-template-columns: minmax(0, min(calc(100dvh - 139px), 100%)) minmax(390px, 480px);
   gap: 26px;
   max-width: 1660px;
   margin: 0 auto;
