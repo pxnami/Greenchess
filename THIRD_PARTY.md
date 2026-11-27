@@ -6,4 +6,4 @@
 - **chess.js** — Jeff Hlywa and contributors. BSD-2-Clause.
 - **React** — Meta Platforms, Inc. and affiliates. MIT license.
 
-Dependency license notices are retained in their npm packages. The KnightLens icon is an original geometric mark.
+Dependency license notices are retained in their npm packages. The GreenChess icon is an original geometric mark.

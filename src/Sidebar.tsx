@@ -42,7 +42,7 @@ export function Sidebar({
         }}
       >
         <img src={pieceImage("w", "p")} alt="" />
-        <span>KnightLens</span>
+        <span>GreenChess</span>
       </a>
       <nav aria-label={t("Hauptmenü", "Main menu")}>
         <button
@@ -101,7 +101,7 @@ export function Sidebar({
             {t("Mehr", "More")}
           </summary>
           <a
-            href="https://github.com/pxnami/KnightLens"
+            href="https://github.com/pxnami/Greenchess"
             target="_blank"
             rel="noreferrer"
           >

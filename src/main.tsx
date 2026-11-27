@@ -41,7 +41,7 @@ import "./chesscom.css";
 
 function restoreGame(): Game | undefined {
   try {
-    const pgn = sessionStorage.getItem("knightlens-game");
+    const pgn = sessionStorage.getItem("greenchess-game");
     return pgn ? parseGame(pgn) : undefined;
   } catch {
     return undefined;
@@ -56,7 +56,7 @@ function App() {
   }, []);
   const [lang, setLang] = useState<Lang>(() => {
     try {
-      return localStorage.getItem("knightlens-language") === "en" ? "en" : "de";
+      return localStorage.getItem("greenchess-language") === "en" ? "en" : "de";
     } catch {
       return "de";
     }
@@ -74,7 +74,7 @@ function App() {
     [depth, setDepth] = useState(18),
     [progress, setProgress] = useState(0);
   const [fullEngine, setFullEngine] = useState(() => {
-    try { return localStorage.getItem("knightlens-lite-engine") !== "true"; }
+    try { return localStorage.getItem("greenchess-lite-engine") !== "true"; }
     catch { return true; }
   });
   const [quickMode, setQuickMode] = useState(false);
@@ -84,7 +84,7 @@ function App() {
   const [surface, setSurface] = useState<"analysis" | "profile">("analysis");
   const [boardTheme, setBoardTheme] = useState<BoardTheme>(() => {
     try {
-      const saved = localStorage.getItem("knightlens-board-theme") as BoardTheme | null;
+      const saved = localStorage.getItem("greenchess-board-theme") as BoardTheme | null;
       return saved && boardThemes.includes(saved) ? saved : "ice";
     } catch {
       return "ice";
@@ -92,7 +92,7 @@ function App() {
   });
   const [pieceTheme, setPieceTheme] = useState<PieceTheme>(() => {
     try {
-      const saved = localStorage.getItem("knightlens-piece-theme") as PieceTheme | null;
+      const saved = localStorage.getItem("greenchess-piece-theme") as PieceTheme | null;
       return saved && pieceThemes.includes(saved) ? saved : "neo";
     } catch { return "neo"; }
   });
@@ -134,28 +134,28 @@ function App() {
   useEffect(() => {
     document.documentElement.lang = lang;
     try {
-      localStorage.setItem("knightlens-language", lang);
+      localStorage.setItem("greenchess-language", lang);
     } catch {
       /* Preference storage is optional. */
     }
   }, [lang]);
   useEffect(() => {
     try {
-      localStorage.setItem("knightlens-board-theme", boardTheme);
+      localStorage.setItem("greenchess-board-theme", boardTheme);
     } catch {
       /* Preference storage is optional. */
     }
   }, [boardTheme]);
   useEffect(() => {
     try {
-      localStorage.setItem("knightlens-piece-theme", pieceTheme);
-      localStorage.setItem("knightlens-lite-engine", String(!fullEngine));
+      localStorage.setItem("greenchess-piece-theme", pieceTheme);
+      localStorage.setItem("greenchess-lite-engine", String(!fullEngine));
     } catch { /* Preferences are optional. */ }
   }, [pieceTheme, fullEngine]);
   useEffect(() => {
     document.title = game
-      ? `${game.headers.White || "White"} vs. ${game.headers.Black || "Black"} | KnightLens`
-      : "KnightLens — Chess, understood.";
+      ? `${game.headers.White || "White"} vs. ${game.headers.Black || "Black"} | GreenChess`
+      : "GreenChess — Chess, understood.";
   }, [game]);
   useEffect(() => {
     if (!playing) return;
@@ -211,7 +211,7 @@ function App() {
     cancel();
     setGame(parsed);
     try {
-      sessionStorage.setItem("knightlens-game", parsed.pgn);
+      sessionStorage.setItem("greenchess-game", parsed.pgn);
     } catch {}
     setSelected(undefined);
     setExplaining(false);
@@ -289,7 +289,7 @@ function App() {
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = "knightlens.pgn";
+    a.download = "greenchess.pgn";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -830,7 +830,7 @@ function App() {
         </div>
         <footer>
           <span>
-            KnightLens <span className="footer-dot">·</span>{" "}
+            GreenChess <span className="footer-dot">·</span>{" "}
             {t(
               "Schach verstehen, Zug für Zug.",
               "Chess, understood. Move by move.",

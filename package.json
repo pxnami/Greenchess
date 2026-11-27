@@ -1,5 +1,5 @@
 {
-  "name": "knightlens",
+  "name": "greenchess",
   "version": "1.0.0",
   "description": "Bilingual chess game analysis with local Stockfish 19.",
   "main": "index.js",
