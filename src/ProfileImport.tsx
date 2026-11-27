@@ -13,7 +13,7 @@ type Profile = { platform: Platform; username: string };
 function rememberedProfile(): Profile {
   try {
     const saved = JSON.parse(
-      sessionStorage.getItem("knightlens-profile") || "null",
+      sessionStorage.getItem("greenchess-profile") || "null",
     );
     if (
       saved &&
@@ -132,7 +132,7 @@ export function ProfileImport({
       setProfile(selected);
       setProgress("");
       try {
-        sessionStorage.setItem("knightlens-profile", JSON.stringify(selected));
+        sessionStorage.setItem("greenchess-profile", JSON.stringify(selected));
       } catch {}
     } catch (error) {
       if (sequence.current === id && !request.signal.aborted)

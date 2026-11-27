@@ -1,4 +1,4 @@
-name: Deploy KnightLens
+name: Deploy GreenChess
 on:
   push:
     branches: [main]

@@ -1,4 +1,4 @@
-const CACHE_NAME = "knightlens-stockfish-19-v1";
+const CACHE_NAME = "greenchess-stockfish-19-v1";
 const ENGINE_FILE = /\/engine\/stockfish-19-(?:single|lite-single)\.(?:js|wasm)$/;
 
 self.addEventListener("install", (event) => {

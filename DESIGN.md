@@ -1,5 +1,5 @@
 ---
-name: KnightLens
+name: GreenChess
 description: A bilingual chess review workbench following the approved Chess.com reference.
 colors:
   primary: "#81b64c"
@@ -53,13 +53,13 @@ components:
     padding: "13px 14px"
 ---
 
-# Design System: KnightLens
+# Design System: GreenChess
 
 ## Overview
 
 **Creative North Star: "The Chess Review Desk"**
 
-The user-approved Chess.com screenshot is the visual authority: a dense charcoal workspace, a large blue Icy Sea board with Neo pieces, and a compact review panel. KnightLens retains its name, German and English interface, and independent engine-derived analysis.
+The user-approved Chess.com screenshot is the visual authority: a dense charcoal workspace, a large blue Icy Sea board with Neo pieces, and a compact review panel. GreenChess retains its name, German and English interface, and independent engine-derived analysis.
 
 The white coach speech bubble and green actions establish the hierarchy. Official Chess.com-hosted Neo, Icy Sea, and Danny coach assets provide the visual references; no generated artwork substitutes for them.
 
@@ -143,7 +143,7 @@ Use the Neo piece set, Icy Sea board, and Danny coach URLs centralized in `src/t
 
 ### Do:
 - Do follow the approved screenshot's charcoal, blue board, white bubble, and green action hierarchy.
-- Do preserve KnightLens branding and German and English copy.
+- Do preserve GreenChess branding and German and English copy.
 - Do retain keyboard navigation, visible focus, and reduced-motion behavior.
 - Do keep coaching and classifications tied to actual engine output.
 

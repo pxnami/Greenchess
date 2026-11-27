@@ -208,7 +208,7 @@ export function PlayerProfile({
         <header className="profile-search-header">
           <div>
             <p className="profile-eyebrow">
-              <img src={themeAssets.chessComPlayIcon} alt="" /> KNIGHTLENS ·
+              <img src={themeAssets.chessComPlayIcon} alt="" /> GREENCHESS ·
               CHESS.COM
             </p>
             <h1>{t("Spielersuche", "Player search")}</h1>
