@@ -1,11 +1,11 @@
 <div align="center">
   <img src="public/icon.svg" width="72" height="72" alt="KnightLens icon">
 
-  # KnightLens
+  # Greenchess
 
   **Chess, understood. Review your games with Stockfish 19 and a coach that explains each move.**
 
-  [![Open KnightLens](https://img.shields.io/badge/Open_KnightLens-81B64C?style=for-the-badge&labelColor=262522)](https://pxnami.github.io/KnightLens/)
+  [![Open Greenchess](https://img.shields.io/badge/Open_KnightLens-81B64C?style=for-the-badge&labelColor=262522)](https://pxnami.github.io/KnightLens/)
   [![Source](https://img.shields.io/badge/View_source-30372E?style=for-the-badge)](https://github.com/pxnami/KnightLens)
   [![Report issue](https://img.shields.io/badge/Report_issue-DCE0CE?style=for-the-badge&labelColor=262522)](https://github.com/pxnami/KnightLens/issues)
 
